@@ -1,36 +1,51 @@
+
 ---
-- hosts: localhost
+- hosts: docker
   gather_facts: false
+  remote_user: root
   become: true
   tasks:
+    - name: Fetch files from the remote server
+      synchronize:
+        src: /root/.jenkins/workspace/Myjob_github_ansible_docker/
+        dest: /home/aadmin/myproject/projects
+        mode: pull
 
-    - name: Stop old container if running
+- hosts: ansible
+  gather_facts: false
+  remote_user: root
+  become: true
+  tasks:
+    - name: Stopping the container!!!!!
       docker_container:
         name: nginx_container
+        image: nginx_image:v1
         state: stopped
-        force_kill: yes
 
-    - name: Remove old container if exists
+    - name: Removing the container 
       docker_container:
         name: nginx_container
+        image: nginx_image:v1
         state: absent
 
-    - name: Remove old image if exists
+    - name: "Its deleting the old image!!!"
       docker_image:
-        name: mynginx:latest
+        name: nginx_image:v1
         state: absent
 
-    - name: Build new Docker image
+    - name: Building the docker image
       docker_image:
-        name: mynginx:latest
         source: build
+        name: nginx_image:v1
         build:
-          path: /home/jenkins/ansible_docker_project
+          path: /home/aadmin/myproject/projects/
+        state: present
 
-    - name: Run new container
+    - name: Creating and starting the container
       docker_container:
         name: nginx_container
-        image: mynginx:latest
+        image: nginx_image:v1
         ports:
           - "8183:80"
         state: started
+
